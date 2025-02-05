@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Page</title>
+</head>
+<body>
+    <script>
+        console.log("Trying to extract user email...");
+
+        // Function to extract userEmail from URL parameters
+        function getQueryParam(param) {
+            let urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Extract userEmail from URL
+        let userEmail = getQueryParam("userEmail");
+
+        if (userEmail) {
+            document.write("<h2>User Email: " + userEmail + "</h2>");
+
+            console.log("Trying to send request with email:", userEmail);
+
+            // Send the email in the HTTP request to Power Automate
+            fetch("https://prod-126.westus.logic.azure.com:443/workflows/e0a7a2d7088b43178fc8533a7fa3c805/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=mAYTu_cRPBa1OM1w0TNW_-rmK8mK-CyFQyWw8EMfnUM", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    userPrincipalName: userEmail  // Pass userEmail to Power Automate
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Flow Triggered Successfully:", data);
+            })
+            .catch(error => console.log("Error triggering flow:", error));
+        } else {
+            console.log("User Email not found in URL parameters.");
+            document.write("<h2>User Email: Not Found</h2>");
+        }
+    </script>
+</body>
+</html>
