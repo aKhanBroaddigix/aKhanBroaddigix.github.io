@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fetch SharePoint User Email</title>
+</head>
+<body>
+
+    <h2 id="user-email">Fetching user email...</h2>
+
+    <script>
+        // Function to get SharePoint user's email
+        function getUserEmail() {
+            fetch("/_api/web/currentuser", {
+                method: "GET",
+                headers: {
+                    "Accept": "application/json;odata=verbose"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.d && data.d.Email) {
+                    let userEmail = data.d.Email;
+                    document.getElementById("user-email").innerText = "User Email: " + userEmail;
+
+                    // Call Power Automate Flow with the retrieved email
+                    triggerPowerAutomate(userEmail);
+                } else {
+                    document.getElementById("user-email").innerText = "User email not found!";
+                }
+            })
+            .catch(error => {
+                document.getElementById("user-email").innerText = "Error fetching email!";
+                console.error("Error:", error);
+            });
+        }
+
+        // Function to trigger Power Automate Flow
+        function triggerPowerAutomate(email) {
+            fetch("https://prod-126.westus.logic.azure.com:443/workflows/e0a7a2d7088b43178fc8533a7fa3c805/triggers/manual/paths/invoke", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ userEmail: email })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Power Automate Triggered:", data);
+            })
+            .catch(error => {
+                console.log("Error triggering Power Automate:", error);
+            });
+        }
+
+        // Run function on page load
+        getUserEmail();
+    </script>
+
+</body>
+</html>
